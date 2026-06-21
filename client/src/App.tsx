@@ -17,6 +17,7 @@ import { useOnlineCount } from "@/hooks/use-online-count";
 
 import { OnlineCounter } from "@/components/online-counter";
 import { TileDetailsCard } from "@/components/tile-details-card";
+import { LeaderboardCard } from "@/components/leaderboard-card";
 
 function App() {
   const { data, isLoading } = useTiles();
@@ -35,6 +36,10 @@ function App() {
         return oldTiles.map((tile) =>
           tile.tileId === updatedTile.tileId ? updatedTile : tile,
         );
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["leaderboard"],
       });
     };
 
@@ -90,7 +95,11 @@ function App() {
             />
           </div>
 
-          <TileDetailsCard tile={hoveredTile} />
+          <div className="space-y-4">
+            <TileDetailsCard tile={hoveredTile} />
+
+            <LeaderboardCard />
+          </div>
         </div>
       </div>
     </main>
