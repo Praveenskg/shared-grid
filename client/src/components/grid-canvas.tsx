@@ -5,9 +5,13 @@ import type { Tile } from "@/types/tile";
 
 interface GridCanvasProps {
   tiles: Tile[];
+  onTileClick: (tileId: number) => void;
 }
 
-export function GridCanvas({ tiles }: GridCanvasProps) {
+export function GridCanvas({
+  tiles,
+  onTileClick,
+}: GridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -48,12 +52,34 @@ export function GridCanvas({ tiles }: GridCanvasProps) {
     }
   }, [tiles]);
 
+
+  const handleClick = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ) => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const col = Math.floor(x / TILE_SIZE);
+    const row = Math.floor(y / TILE_SIZE);
+
+    const tileId = row * GRID_SIZE + col;
+
+    onTileClick(tileId);
+  };
+
   return (
     <canvas
       ref={canvasRef}
       width={CANVAS_SIZE}
       height={CANVAS_SIZE}
-      className="rounded-lg border bg-white"
+      onClick={handleClick}
+      className="rounded-lg border bg-white cursor-pointer"
     />
   );
 }
