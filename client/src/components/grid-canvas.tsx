@@ -1,8 +1,13 @@
 import { useEffect, useRef } from "react";
 
 import { CANVAS_SIZE, GRID_SIZE, TILE_SIZE } from "@/lib/constants";
+import type { Tile } from "@/types/tile";
 
-export function GridCanvas() {
+interface GridCanvasProps {
+  tiles: Tile[];
+}
+
+export function GridCanvas({ tiles }: GridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -16,26 +21,39 @@ export function GridCanvas() {
 
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        ctx.strokeStyle = "#e5e7eb";
+    for (const tile of tiles) {
+      const row = Math.floor(tile.tileId / GRID_SIZE);
+      const col = tile.tileId % GRID_SIZE;
 
-        ctx.strokeRect(
-          col * TILE_SIZE,
-          row * TILE_SIZE,
-          TILE_SIZE,
-          TILE_SIZE,
-        );
-      }
+      const x = col * TILE_SIZE;
+      const y = row * TILE_SIZE;
+
+      ctx.fillStyle = tile.color ?? "#ffffff";
+
+      ctx.fillRect(
+        x,
+        y,
+        TILE_SIZE,
+        TILE_SIZE,
+      );
+
+      ctx.strokeStyle = "#e5e7eb";
+
+      ctx.strokeRect(
+        x,
+        y,
+        TILE_SIZE,
+        TILE_SIZE,
+      );
     }
-  }, []);
+  }, [tiles]);
 
   return (
     <canvas
       ref={canvasRef}
       width={CANVAS_SIZE}
       height={CANVAS_SIZE}
-      className="border rounded-lg bg-white"
+      className="rounded-lg border bg-white"
     />
   );
 }
