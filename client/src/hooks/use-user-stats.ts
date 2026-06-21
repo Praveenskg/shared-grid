@@ -1,20 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
-import type { LeaderboardUser } from "@/types/stats";
+import type { UserStats } from "@/types/stats";
 
 interface Response {
   success: boolean;
-  data: LeaderboardUser[];
+  data: UserStats;
 }
 
-export function useLeaderboard() {
+export function useUserStats(
+  userId?: string,
+) {
   return useQuery({
-    queryKey: ["leaderboard"],
+    queryKey: ["user-stats", userId],
+    enabled: !!userId,
     queryFn: async () => {
       const response =
         await api.get<Response>(
-          "/stats/leaderboard",
+          `/stats/user/${userId}`,
         );
 
       return response.data.data;

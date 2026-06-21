@@ -18,6 +18,7 @@ import { useOnlineCount } from "@/hooks/use-online-count";
 import { OnlineCounter } from "@/components/online-counter";
 import { TileDetailsCard } from "@/components/tile-details-card";
 import { LeaderboardCard } from "@/components/leaderboard-card";
+import { CurrentUserCard } from "@/components/current-user-card";
 
 function App() {
   const { data, isLoading } = useTiles();
@@ -40,6 +41,10 @@ function App() {
 
       queryClient.invalidateQueries({
         queryKey: ["leaderboard"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["user-stats"],
       });
     };
 
@@ -80,13 +85,13 @@ function App() {
   return (
     <main className="min-h-screen bg-slate-100 p-8">
       <UsernameDialog open={!user} onSubmit={handleCreateUser} />
-      <div className="mx-auto">
+      <div className="mx-auto container">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Shared Grid</h1>
 
           <OnlineCounter count={onlineCount} />
         </div>
-        <div className="flex gap-6">
+        <div className="flex items-start gap-6">
           <div className="overflow-auto rounded-xl border bg-white">
             <GridCanvas
               tiles={data}
@@ -99,6 +104,10 @@ function App() {
             <TileDetailsCard tile={hoveredTile} />
 
             <LeaderboardCard />
+
+            <CurrentUserCard
+              userId={user?.id}
+            />
           </div>
         </div>
       </div>
