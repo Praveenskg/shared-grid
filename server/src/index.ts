@@ -10,6 +10,7 @@ import tileRoutes from "./routes/tile-routes";
 import { seedTiles } from "./services/seed-tiles";
 import { registerSocketHandlers } from "./sockets/index";
 import { setIO } from "./sockets/socket-instance";
+import statsRoutes from "./routes/stats-routes";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ async function bootstrap() {
   });
 
   app.use("/api/tiles", tileRoutes);
+  app.use("/api/stats", statsRoutes);
 
   const httpServer = createServer(app);
 
