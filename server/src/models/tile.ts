@@ -22,6 +22,7 @@ const tileSchema = new Schema<ITile>(
     ownerId: {
       type: String,
       default: null,
+      index: true,
       trim: true,
     },
 
