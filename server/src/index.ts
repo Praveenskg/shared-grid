@@ -5,8 +5,11 @@ import { createServer } from "node:http";
 
 import { Server } from "socket.io";
 
-import { connectDB } from "./db/connect-db.js";
+import { connectDB } from "./db/connect-db";
+import tileRoutes from "./routes/tile-routes";
 import { seedTiles } from "./services/seed-tiles";
+import { registerSocketHandlers } from "./sockets/index";
+import { setIO } from "./sockets/socket-instance";
 
 dotenv.config();
 
@@ -17,6 +20,18 @@ async function bootstrap() {
 
   const app = express();
 
+  app.use(cors());
+  app.use(express.json());
+
+  app.get("/health", (_, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Server is running",
+    });
+  });
+
+  app.use("/api/tiles", tileRoutes);
+
   const httpServer = createServer(app);
 
   const io = new Server(httpServer, {
@@ -26,15 +41,9 @@ async function bootstrap() {
     },
   });
 
-  app.use(cors());
-  app.use(express.json());
+  setIO(io);
 
-  app.get("/health", (_, res) => {
-    res.json({
-      success: true,
-      message: "Server is running",
-    });
-  });
+  registerSocketHandlers(io);
 
   const PORT = Number(process.env.PORT) || 5000;
 
@@ -43,4 +52,7 @@ async function bootstrap() {
   });
 }
 
-bootstrap().catch(console.error);
+bootstrap().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
