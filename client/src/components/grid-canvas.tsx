@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { CANVAS_SIZE, GRID_SIZE, TILE_SIZE } from "@/lib/constants";
 import type { Tile } from "@/types/tile";
@@ -6,11 +6,13 @@ import type { Tile } from "@/types/tile";
 interface GridCanvasProps {
   tiles: Tile[];
   onTileClick: (tileId: number) => void;
+  onTileHover: (tile: Tile | null) => void;
 }
 
 export function GridCanvas({
   tiles,
   onTileClick,
+  onTileHover,
 }: GridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -73,13 +75,47 @@ export function GridCanvas({
     onTileClick(tileId);
   };
 
+  const tileMap = useMemo(() => {
+    return new Map(
+      tiles.map((tile) => [tile.tileId, tile]),
+    );
+  }, [tiles]);
+
+  const handleMouseMove = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ) => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const col = Math.floor(x / TILE_SIZE);
+    const row = Math.floor(y / TILE_SIZE);
+
+    const tileId = row * GRID_SIZE + col;
+
+    onTileHover(tileMap.get(tileId) ?? null);
+  };
+
+  const handleMouseLeave = () => {
+    onTileHover(null);
+  };
+
   return (
     <canvas
       ref={canvasRef}
       width={CANVAS_SIZE}
       height={CANVAS_SIZE}
       onClick={handleClick}
-      className="rounded-lg border bg-white cursor-pointer"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="cursor-pointer rounded-lg border bg-white"
     />
+    
+    
   );
 }

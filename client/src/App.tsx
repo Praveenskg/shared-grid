@@ -13,13 +13,19 @@ import { getUser, saveUser } from "@/lib/user";
 import type { User } from "@/types/user";
 
 import { UsernameDialog } from "@/components/username-dialog";
+import { useOnlineCount } from "@/hooks/use-online-count";
+
+import { OnlineCounter } from "@/components/online-counter";
+import { TileDetailsCard } from "@/components/tile-details-card";
 
 function App() {
   const { data, isLoading } = useTiles();
+  const onlineCount = useOnlineCount();
   const [user, setUser] = useState<User | null>(() => {
     return getUser();
   });
 
+  const [hoveredTile, setHoveredTile] = useState<Tile | null>(null);
 
   useEffect(() => {
     const handleTileUpdated = (updatedTile: Tile) => {
@@ -52,7 +58,6 @@ function App() {
   };
 
   const handleTileClick = async (tileId: number) => {
-
     if (!user) return;
 
     await claimTile({
@@ -69,15 +74,23 @@ function App() {
 
   return (
     <main className="min-h-screen bg-slate-100 p-8">
-      <UsernameDialog
-        open={!user}
-        onSubmit={handleCreateUser}
-      />
+      <UsernameDialog open={!user} onSubmit={handleCreateUser} />
       <div className="mx-auto">
-        <h1 className="mb-6 text-3xl font-bold">Shared Grid</h1>
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Shared Grid</h1>
 
-        <div className="overflow-auto rounded-xl border bg-white">
-          <GridCanvas tiles={data} onTileClick={handleTileClick} />
+          <OnlineCounter count={onlineCount} />
+        </div>
+        <div className="flex gap-6">
+          <div className="overflow-auto rounded-xl border bg-white">
+            <GridCanvas
+              tiles={data}
+              onTileClick={handleTileClick}
+              onTileHover={setHoveredTile}
+            />
+          </div>
+
+          <TileDetailsCard tile={hoveredTile} />
         </div>
       </div>
     </main>
