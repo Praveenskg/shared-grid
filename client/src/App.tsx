@@ -92,7 +92,7 @@ function App() {
           <OnlineCounter count={onlineCount} />
         </div>
         <div className="flex items-start gap-6">
-          <div className="overflow-auto rounded-xl border bg-white">
+          <div className="h-[800px] overflow-hidden rounded-xl border bg-white">
             <GridCanvas
               tiles={data}
               onTileClick={handleTileClick}
@@ -105,9 +105,7 @@ function App() {
 
             <LeaderboardCard />
 
-            <CurrentUserCard
-              userId={user?.id}
-            />
+            <CurrentUserCard userId={user?.id} />
           </div>
         </div>
       </div>

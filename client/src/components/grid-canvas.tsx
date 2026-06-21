@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CANVAS_SIZE, GRID_SIZE, TILE_SIZE } from "@/lib/constants";
 import type { Tile } from "@/types/tile";
@@ -16,6 +16,26 @@ export function GridCanvas({
 }: GridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [scale, setScale] = useState(1);
+
+  const [offset, setOffset] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  const isDraggingRef = useRef(false);
+
+  const dragStartRef = useRef({
+    x: 0,
+    y: 0,
+  });
+
+  const tileMap = useMemo(() => {
+    return new Map(
+      tiles.map((tile) => [tile.tileId, tile]),
+    );
+  }, [tiles]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
 
@@ -25,7 +45,17 @@ export function GridCanvas({
 
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.clearRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    );
+
+    ctx.save();
+
+    ctx.translate(offset.x, offset.y);
+    ctx.scale(scale, scale);
 
     for (const tile of tiles) {
       const row = Math.floor(tile.tileId / GRID_SIZE);
@@ -52,57 +82,149 @@ export function GridCanvas({
         TILE_SIZE,
       );
     }
-  }, [tiles]);
 
+    ctx.restore();
+  }, [tiles, scale, offset]);
+
+  const getGridCoordinates = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ) => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) {
+      return null;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x =
+      (event.clientX - rect.left - offset.x) /
+      scale;
+
+    const y =
+      (event.clientY - rect.top - offset.y) /
+      scale;
+
+    return { x, y };
+  };
 
   const handleClick = (
     event: React.MouseEvent<HTMLCanvasElement>,
   ) => {
-    const canvas = canvasRef.current;
+    if (isDraggingRef.current) {
+      return;
+    }
 
-    if (!canvas) return;
+    const coords =
+      getGridCoordinates(event);
 
-    const rect = canvas.getBoundingClientRect();
+    if (!coords) return;
 
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const col = Math.floor(
+      coords.x / TILE_SIZE,
+    );
 
-    const col = Math.floor(x / TILE_SIZE);
-    const row = Math.floor(y / TILE_SIZE);
+    const row = Math.floor(
+      coords.y / TILE_SIZE,
+    );
 
-    const tileId = row * GRID_SIZE + col;
+    const tileId =
+      row * GRID_SIZE + col;
+
+    if (
+      tileId < 0 ||
+      tileId >= GRID_SIZE * GRID_SIZE
+    ) {
+      return;
+    }
 
     onTileClick(tileId);
   };
 
-  const tileMap = useMemo(() => {
-    return new Map(
-      tiles.map((tile) => [tile.tileId, tile]),
-    );
-  }, [tiles]);
-
   const handleMouseMove = (
     event: React.MouseEvent<HTMLCanvasElement>,
   ) => {
-    const canvas = canvasRef.current;
+    if (isDraggingRef.current) {
+      const dx =
+        event.clientX -
+        dragStartRef.current.x;
 
-    if (!canvas) return;
+      const dy =
+        event.clientY -
+        dragStartRef.current.y;
 
-    const rect = canvas.getBoundingClientRect();
+      dragStartRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
 
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+      setOffset((prev) => ({
+        x: prev.x + dx,
+        y: prev.y + dy,
+      }));
 
-    const col = Math.floor(x / TILE_SIZE);
-    const row = Math.floor(y / TILE_SIZE);
+      return;
+    }
 
-    const tileId = row * GRID_SIZE + col;
+    const coords =
+      getGridCoordinates(event);
 
-    onTileHover(tileMap.get(tileId) ?? null);
+    if (!coords) return;
+
+    const col = Math.floor(
+      coords.x / TILE_SIZE,
+    );
+
+    const row = Math.floor(
+      coords.y / TILE_SIZE,
+    );
+
+    const tileId =
+      row * GRID_SIZE + col;
+
+    onTileHover(
+      tileMap.get(tileId) ?? null,
+    );
   };
 
   const handleMouseLeave = () => {
     onTileHover(null);
+  };
+
+  const handleMouseDown = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ) => {
+    isDraggingRef.current = true;
+
+    dragStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+  };
+
+  const handleWheel = (
+    event: React.WheelEvent<HTMLCanvasElement>,
+  ) => {
+    event.preventDefault();
+
+    setScale((current) => {
+      const zoomFactor =
+        event.deltaY > 0
+          ? 0.9
+          : 1.1;
+
+      return Math.min(
+        5,
+        Math.max(
+          0.5,
+          current * zoomFactor,
+        ),
+      );
+    });
   };
 
   return (
@@ -113,9 +235,10 @@ export function GridCanvas({
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="cursor-pointer rounded-lg border bg-white"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onWheel={handleWheel}
+      className="cursor-grab rounded-lg border bg-white active:cursor-grabbing"
     />
-    
-    
   );
 }
