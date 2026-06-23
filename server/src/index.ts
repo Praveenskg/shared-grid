@@ -6,14 +6,14 @@ import { createServer } from "node:http";
 
 import { Server } from "socket.io";
 
-import { connectDB } from "./db/connect-db";
-import tileRoutes from "./routes/tile-routes";
-import { seedTiles } from "./services/seed-tiles";
-import { registerSocketHandlers } from "./sockets/index";
-import { setIO } from "./sockets/socket-instance";
-import statsRoutes from "./routes/stats-routes";
-import activityRoutes from "./routes/activity-routes";
-import adminRoutes from "./routes/admin-routes";
+import adminRoutes from "./routes/admin-routes.js";
+import { connectDB } from "./db/connect-db.js";
+import { seedTiles } from "./services/seed-tiles.js";
+import statsRoutes from "./routes/stats-routes.js";
+import tileRoutes from "./routes/tile-routes.js";
+import activityRoutes from "./routes/activity-routes.js";
+import { setIO } from "./sockets/socket-instance.js";
+import { registerSocketHandlers } from "./sockets/index.js";
 
 dotenv.config();
 

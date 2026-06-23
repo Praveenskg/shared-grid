@@ -1,8 +1,8 @@
 import { Router } from "express";
 
-import { Tile } from "../models/tile";
-import { Activity } from "../models/activity";
-import { getIO } from "../sockets/socket-instance";
+import { Tile } from "../models/tile.js";
+import { Activity } from "../models/activity.js";
+import { getIO } from "../sockets/socket-instance.js";
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import { Tile } from "../models/tile";
+import { Tile } from "../models/tile.js";
 
 const GRID_SIZE = 50;
 
