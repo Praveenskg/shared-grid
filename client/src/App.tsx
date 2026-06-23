@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 
+import { Navbar } from "./components/navbar";
 import { GridCanvas } from "@/components/grid-canvas";
 import { UsernameDialog } from "@/components/username-dialog";
-import { TileDetailsCard } from "@/components/tile-details-card";
 import { LeaderboardCard } from "@/components/leaderboard-card";
+import { TileDetailsCard } from "@/components/tile-details-card";
 import { CurrentUserCard } from "@/components/current-user-card";
 import { RecentActivityCard } from "@/components/recent-activity-card";
 
-import { Badge } from "@/components/ui/badge";
 import { useTiles } from "@/hooks/use-tiles";
-import { useOnlineCount } from "@/hooks/use-online-count";
 
 import { claimTile } from "@/lib/claim-tile";
 import { getRandomColor } from "@/lib/random-color";
@@ -23,7 +22,7 @@ import type { Activity } from "@/types/activity";
 
 function App() {
   const { data, isLoading } = useTiles();
-  const onlineCount = useOnlineCount();
+
   const [user, setUser] = useState<User | null>(() => getUser());
   const [hoveredTile, setHoveredTile] = useState<Tile | null>(null);
 
@@ -104,16 +103,10 @@ function App() {
   return (
     <main className="min-h-screen bg-background">
       <UsernameDialog open={!user} onSubmit={handleCreateUser} />
-
+      <Navbar />
       <div className="container mx-auto  px-4 py-6">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Shared Grid</h1>
-
-          <Badge variant="secondary">Online {onlineCount}</Badge>
-        </div>
-
         <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-          <div className="overflow-auto rounded-xl border bg-card">
+          <div className="overflow-auto  border bg-card">
             <GridCanvas
               tiles={data}
               onTileClick={handleTileClick}
@@ -124,7 +117,7 @@ function App() {
           <div className="space-y-4">
             <TileDetailsCard tile={hoveredTile} />
             <LeaderboardCard />
-            <CurrentUserCard userId={user?.id} />
+            <CurrentUserCard user={user} />
             <RecentActivityCard />
           </div>
         </div>

@@ -238,7 +238,7 @@ export function GridCanvas({
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onWheel={handleWheel}
-      className="cursor-grab rounded-lg border bg-white active:cursor-grabbing"
+      className="cursor-grab rounded-lg border bg-white active:cursor-pointer w-full h-full"
     />
   );
 }

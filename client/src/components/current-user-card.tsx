@@ -1,32 +1,20 @@
-import { User } from "lucide-react";
+import { User as UserIcon } from "lucide-react";
 import { motion } from "motion/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useUserStats } from "@/hooks/use-user-stats";
 
+import type { User } from "@/types/user";
+
 interface Props {
-  userId?: string;
+  user: User | null;
 }
 
-export function CurrentUserCard({ userId }: Props) {
-  const { data, isLoading } = useUserStats(userId);
+export function CurrentUserCard({ user }: Props) {
+  const { data } = useUserStats(user?.id);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Profile</CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!data) {
+  if (!user) {
     return null;
   }
 
@@ -47,7 +35,7 @@ export function CurrentUserCard({ userId }: Props) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="size-5" />
+            <UserIcon className="size-5" />
 
             <span>Your Profile</span>
           </CardTitle>
@@ -81,7 +69,7 @@ export function CurrentUserCard({ userId }: Props) {
             >
               <p className="text-sm text-muted-foreground">Name</p>
 
-              <p className="font-medium">{data.ownerName}</p>
+              <p className="font-medium">{user.name}</p>
             </motion.div>
 
             <motion.div
@@ -102,7 +90,7 @@ export function CurrentUserCard({ userId }: Props) {
                 <motion.div
                   className="size-4 rounded-full border"
                   style={{
-                    backgroundColor: data.color,
+                    backgroundColor: user.color,
                   }}
                   initial={{
                     scale: 0,
@@ -115,7 +103,7 @@ export function CurrentUserCard({ userId }: Props) {
                   }}
                 />
 
-                <span className="font-mono text-sm">{data.color}</span>
+                <span className="font-mono text-sm">{user.color}</span>
               </div>
             </motion.div>
 
@@ -134,7 +122,7 @@ export function CurrentUserCard({ userId }: Props) {
             >
               <p className="text-sm text-muted-foreground">Tiles Owned</p>
 
-              <p className="font-semibold">{data.tileCount}</p>
+              <p className="font-semibold">{data?.tileCount ?? 0}</p>
             </motion.div>
 
             <motion.div
@@ -152,7 +140,9 @@ export function CurrentUserCard({ userId }: Props) {
             >
               <p className="text-sm text-muted-foreground">Rank</p>
 
-              <p className="font-semibold">#{data.rank}</p>
+              <p className="font-semibold">
+                {data?.rank ? `#${data.rank}` : "-"}
+              </p>
             </motion.div>
           </motion.div>
         </CardContent>
