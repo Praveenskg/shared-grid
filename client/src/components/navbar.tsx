@@ -46,7 +46,9 @@ export function Navbar() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">Online {onlineCount}</Badge>
+          <Badge variant="secondary">
+            {onlineCount > 0 ? ` Online ${onlineCount}` : "Connecting..."}
+          </Badge>
 
           <Button size="sm" variant="destructive" onClick={handleReset}>
             <RotateCcw className="mr-2 size-4" />

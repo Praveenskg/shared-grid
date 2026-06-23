@@ -1,17 +1,23 @@
 import type { Server } from "socket.io";
 
-let onlineUsers = 0;
+const connectedUsers = new Set<string>();
 
 export function registerSocketHandlers(io: Server) {
   io.on("connection", (socket) => {
-    onlineUsers++;
-    io.emit("online-count", onlineUsers);
-    console.log(`${socket.id} connected`);
-    socket.on("disconnect", () => {
-      onlineUsers--;
-      io.emit("online-count", onlineUsers);
+    connectedUsers.add(socket.id);
 
-      console.log(`${socket.id} disconnected`);
+    io.emit("online-count", connectedUsers.size);
+
+    console.log(`${socket.id} connected | Online: ${connectedUsers.size}`);
+
+    socket.on("disconnect", (reason) => {
+      connectedUsers.delete(socket.id);
+
+      io.emit("online-count", connectedUsers.size);
+
+      console.log(
+        `${socket.id} disconnected (${reason}) | Online: ${connectedUsers.size}`,
+      );
     });
   });
 }
