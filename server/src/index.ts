@@ -13,6 +13,7 @@ import { registerSocketHandlers } from "./sockets/index";
 import { setIO } from "./sockets/socket-instance";
 import statsRoutes from "./routes/stats-routes";
 import activityRoutes from "./routes/activity-routes";
+import adminRoutes from "./routes/admin-routes";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ async function bootstrap() {
   app.use("/api/tiles", tileRoutes);
   app.use("/api/stats", statsRoutes);
   app.use("/api/activities", activityRoutes);
+  app.use("/api/admin", adminRoutes);
 
   const httpServer = createServer(app);
 

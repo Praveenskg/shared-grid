@@ -59,6 +59,23 @@ function App() {
     socket.on("tile-updated", handleTileUpdated);
 
     socket.on("activity-created", handleActivityCreated);
+    socket.on("game-reset", () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tiles"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["leaderboard"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["activities"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["user-stats"],
+      });
+    });
 
     return () => {
       socket.off("tile-updated", handleTileUpdated);
@@ -101,12 +118,12 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="bg-background">
       <UsernameDialog open={!user} onSubmit={handleCreateUser} />
       <Navbar />
       <div className="container mx-auto  px-4 py-6">
         <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-          <div className="overflow-auto  border bg-card">
+          <div className="overflow-auto">
             <GridCanvas
               tiles={data}
               onTileClick={handleTileClick}
