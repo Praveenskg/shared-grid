@@ -1,38 +1,38 @@
-import { GridCanvas } from "@/components/grid-canvas";
-import { useTiles } from "@/hooks/use-tiles";
-import { claimTile } from "@/lib/claim-tile";
-
-import { socket } from "@/lib/socket";
-import { queryClient } from "@/lib/query-client";
-import type { Tile } from "./types/tile";
 import { useEffect, useState } from "react";
 
-import { getRandomColor } from "@/lib/random-color";
-import { getUser, saveUser } from "@/lib/user";
-
-import type { User } from "@/types/user";
-
+import { GridCanvas } from "@/components/grid-canvas";
 import { UsernameDialog } from "@/components/username-dialog";
-import { useOnlineCount } from "@/hooks/use-online-count";
-
-import { OnlineCounter } from "@/components/online-counter";
 import { TileDetailsCard } from "@/components/tile-details-card";
 import { LeaderboardCard } from "@/components/leaderboard-card";
 import { CurrentUserCard } from "@/components/current-user-card";
+import { RecentActivityCard } from "@/components/recent-activity-card";
+
+import { Badge } from "@/components/ui/badge";
+import { useTiles } from "@/hooks/use-tiles";
+import { useOnlineCount } from "@/hooks/use-online-count";
+
+import { claimTile } from "@/lib/claim-tile";
+import { getRandomColor } from "@/lib/random-color";
+import { queryClient } from "@/lib/query-client";
+import { socket } from "@/lib/socket";
+import { getUser, saveUser } from "@/lib/user";
+
+import type { Tile } from "@/types/tile";
+import type { User } from "@/types/user";
+import type { Activity } from "@/types/activity";
 
 function App() {
   const { data, isLoading } = useTiles();
   const onlineCount = useOnlineCount();
-  const [user, setUser] = useState<User | null>(() => {
-    return getUser();
-  });
-
+  const [user, setUser] = useState<User | null>(() => getUser());
   const [hoveredTile, setHoveredTile] = useState<Tile | null>(null);
 
   useEffect(() => {
     const handleTileUpdated = (updatedTile: Tile) => {
       queryClient.setQueryData(["tiles"], (oldTiles: Tile[] | undefined) => {
-        if (!oldTiles) return [];
+        if (!oldTiles) {
+          return [];
+        }
 
         return oldTiles.map((tile) =>
           tile.tileId === updatedTile.tileId ? updatedTile : tile,
@@ -48,10 +48,23 @@ function App() {
       });
     };
 
+    const handleActivityCreated = (activity: Activity) => {
+      queryClient.setQueryData<Activity[]>(
+        ["activities"],
+        (oldActivities = []) => {
+          return [activity, ...oldActivities].slice(0, 5);
+        },
+      );
+    };
+
     socket.on("tile-updated", handleTileUpdated);
+
+    socket.on("activity-created", handleActivityCreated);
 
     return () => {
       socket.off("tile-updated", handleTileUpdated);
+
+      socket.off("activity-created", handleActivityCreated);
     };
   }, []);
 
@@ -68,7 +81,9 @@ function App() {
   };
 
   const handleTileClick = async (tileId: number) => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     await claimTile({
       tileId,
@@ -79,20 +94,26 @@ function App() {
   };
 
   if (isLoading || !data) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-8">
+    <main className="min-h-screen bg-background">
       <UsernameDialog open={!user} onSubmit={handleCreateUser} />
-      <div className="mx-auto container">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Shared Grid</h1>
 
-          <OnlineCounter count={onlineCount} />
+      <div className="container mx-auto  px-4 py-6">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Shared Grid</h1>
+
+          <Badge variant="secondary">Online {onlineCount}</Badge>
         </div>
-        <div className="flex items-start gap-6">
-          <div className="h-[800px] overflow-hidden rounded-xl border bg-white">
+
+        <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+          <div className="overflow-auto rounded-xl border bg-card">
             <GridCanvas
               tiles={data}
               onTileClick={handleTileClick}
@@ -102,10 +123,9 @@ function App() {
 
           <div className="space-y-4">
             <TileDetailsCard tile={hoveredTile} />
-
             <LeaderboardCard />
-
             <CurrentUserCard userId={user?.id} />
+            <RecentActivityCard />
           </div>
         </div>
       </div>

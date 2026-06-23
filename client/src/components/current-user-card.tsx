@@ -1,4 +1,7 @@
 import { User } from "lucide-react";
+import { motion } from "motion/react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useUserStats } from "@/hooks/use-user-stats";
 
@@ -6,52 +9,154 @@ interface Props {
   userId?: string;
 }
 
-export function CurrentUserCard({
-  userId,
-}: Props) {
-  const { data } =
-    useUserStats(userId);
+export function CurrentUserCard({ userId }: Props) {
+  const { data, isLoading } = useUserStats(userId);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Profile</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!data) {
     return null;
   }
 
   return (
-    <div className="w-80 rounded-xl border bg-white p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <User className="h-5 w-5" />
+    <motion.div
+      initial={{
+        opacity: 0,
+        y: 20,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        duration: 0.25,
+      }}
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="size-5" />
 
-        <h2 className="font-semibold">
-          Your Profile
-        </h2>
-      </div>
+            <span>Your Profile</span>
+          </CardTitle>
+        </CardHeader>
 
-      <div className="space-y-3">
-        <div>
-          Name: {data.ownerName}
-        </div>
-
-        <div className="flex items-center gap-2">
-          Color
-
-          <div
-            className="h-4 w-4 rounded-full"
-            style={{
-              backgroundColor:
-                data.color,
+        <CardContent>
+          <motion.div
+            className="space-y-4"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.05,
+                },
+              },
             }}
-          />
-        </div>
+          >
+            <motion.div
+              variants={{
+                hidden: {
+                  opacity: 0,
+                  y: 10,
+                },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                },
+              }}
+            >
+              <p className="text-sm text-muted-foreground">Name</p>
 
-        <div>
-          Tiles Owned:{" "}
-          {data.tileCount}
-        </div>
+              <p className="font-medium">{data.ownerName}</p>
+            </motion.div>
 
-        <div>
-          Rank: #{data.rank}
-        </div>
-      </div>
-    </div>
+            <motion.div
+              variants={{
+                hidden: {
+                  opacity: 0,
+                  y: 10,
+                },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                },
+              }}
+            >
+              <p className="mb-2 text-sm text-muted-foreground">Color</p>
+
+              <div className="flex items-center gap-2">
+                <motion.div
+                  className="size-4 rounded-full border"
+                  style={{
+                    backgroundColor: data.color,
+                  }}
+                  initial={{
+                    scale: 0,
+                  }}
+                  animate={{
+                    scale: 1,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                  }}
+                />
+
+                <span className="font-mono text-sm">{data.color}</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              layout
+              variants={{
+                hidden: {
+                  opacity: 0,
+                  y: 10,
+                },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                },
+              }}
+            >
+              <p className="text-sm text-muted-foreground">Tiles Owned</p>
+
+              <p className="font-semibold">{data.tileCount}</p>
+            </motion.div>
+
+            <motion.div
+              layout
+              variants={{
+                hidden: {
+                  opacity: 0,
+                  y: 10,
+                },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                },
+              }}
+            >
+              <p className="text-sm text-muted-foreground">Rank</p>
+
+              <p className="font-semibold">#{data.rank}</p>
+            </motion.div>
+          </motion.div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

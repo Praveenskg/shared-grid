@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import morgan from "morgan";
 import { createServer } from "node:http";
 
 import { Server } from "socket.io";
@@ -11,6 +12,7 @@ import { seedTiles } from "./services/seed-tiles";
 import { registerSocketHandlers } from "./sockets/index";
 import { setIO } from "./sockets/socket-instance";
 import statsRoutes from "./routes/stats-routes";
+import activityRoutes from "./routes/activity-routes";
 
 dotenv.config();
 
@@ -20,6 +22,7 @@ async function bootstrap() {
   await seedTiles();
 
   const app = express();
+  app.use(morgan("dev"));
 
   app.use(cors());
   app.use(express.json());
@@ -33,6 +36,7 @@ async function bootstrap() {
 
   app.use("/api/tiles", tileRoutes);
   app.use("/api/stats", statsRoutes);
+  app.use("/api/activities", activityRoutes);
 
   const httpServer = createServer(app);
 

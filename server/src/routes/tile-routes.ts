@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { Activity } from "../models/activity";
 import { Tile } from "../models/tile";
 import { getIO } from "../sockets/socket-instance";
 
@@ -23,6 +24,7 @@ router.patch("/:tileId/claim", async (req, res) => {
     const tile = await Tile.findOneAndUpdate(
       {
         tileId: Number(tileId),
+        ownerId: null,
       },
       {
         ownerId,
@@ -36,13 +38,24 @@ router.patch("/:tileId/claim", async (req, res) => {
     );
 
     if (!tile) {
-      return res.status(404).json({
+      return res.status(409).json({
         success: false,
-        message: "Tile not found",
+        message: "Tile already claimed",
       });
     }
 
-    getIO().emit("tile-updated", tile);
+    const activity = await Activity.create({
+      tileId: tile.tileId,
+      ownerId,
+      ownerName,
+      color,
+    });
+
+    const io = getIO();
+
+    io.emit("tile-updated", tile);
+
+    io.emit("activity-created", activity);
 
     res.json({
       success: true,
